@@ -54,18 +54,18 @@ func LoadIPAMConfig(bytes []byte, args string) (*IPAMConfig, error) {
 	bridgeAddr, err := exec.Command(cmd).Output()
 	logrus.Debug(bridgeAddr)
 	if err != nil {
-		fmt.Errorf("failed to get flat bridge:%s ip, %v", n.Bridge, err)
+		logrus.Errorf("failed to get flat bridge:%s ip, %v", n.Bridge, err)
 	}
 	bridgeIP, _, err := net.ParseCIDR(string(bridgeAddr))
 	logrus.Debug(bridgeIP)
 	if err != nil {
-		fmt.Errorf("failed to parse flat bridge:%s cidr, %v", n.Bridge, err)
+		logrus.Errorf("failed to parse flat bridge:%s cidr, %v", n.Bridge, err)
 	} else {
 		_, metadataIPNet, err := net.ParseCIDR(metadataCIDR)
 		if err != nil {
-			fmt.Errorf("failed to parse metadataCIDR")
+			logrus.Errorf("failed to parse metadataCIDR")
 		} else {
-			mdRoute := &types.Route{Dst: *metadataIPNet, GW: bridgeIP}
+			mdRoute := types.Route{Dst: *metadataIPNet, GW: bridgeIP}
 			n.IPAM.Routes = append(n.IPAM.Routes, mdRoute)
 		}
 	}
