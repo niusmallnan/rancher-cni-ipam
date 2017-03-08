@@ -23,10 +23,6 @@ func cmdAdd(args *skel.CmdArgs) error {
 		return err
 	}
 
-	if ipamConf.IsDebugLevel == "true" {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
 	if ipamConf.LogToFile != "" {
 		f, err := os.OpenFile(ipamConf.LogToFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err == nil && f != nil {
