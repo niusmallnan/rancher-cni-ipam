@@ -72,7 +72,6 @@ func cmdAdd(args *skel.CmdArgs) error {
 
 	r.IP4.Routes = append(
 		ipamConf.Routes,
-		ipamConf.MetadataRoute,
 	)
 
 	logrus.Infof("rancher-cni-ipam: %s", fmt.Sprintf("r: %#v", r))
