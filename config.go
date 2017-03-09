@@ -22,6 +22,7 @@ type IPAMConfig struct {
 	Type                 string        `json:"type"`
 	LogToFile            string        `json:"logToFile"`
 	IsDebugLevel         string        `json:"isDebugLevel"`
+	IsFlat               bool          `json:"isFlat"`
 	SubnetPrefixSize     string        `json:"subnetPrefixSize"`
 	Routes               []types.Route `json:"routes"`
 	RancherContainerUUID types.UnmarshallableString
@@ -73,27 +74,29 @@ func LoadIPAMConfig(bytes []byte, args string) (*IPAMConfig, error) {
 		}
 	}
 
-	// ip addr show mpbr0 | grep "inet\b" | awk '{print $2}'
-	// gw: bridge_ip Dst:169.254.169.250
-	cmd := fmt.Sprintf("ip addr show %s | grep 'inet\\b' | awk '{print $2}'", n.Bridge)
-	logrus.Debugf("rancher-cni-ipam: %s", cmd)
-	bridgeCIDR, err := exec.Command("/bin/sh", "-c", cmd).Output()
-	logrus.Debugf("rancher-cni-ipam: get bridgeCIDR %s", bridgeCIDR)
-	if err != nil {
-		logrus.Errorf("failed to get flat bridge: %s ip, %v", n.Bridge, err)
-	}
-	bridgeIP, _, err := net.ParseCIDR(strings.Replace(string(bridgeCIDR), "\n", "", -1))
-	logrus.Debugf("rancher-cni-ipam: get bridgeIP %s", bridgeIP)
-	if err != nil {
-		logrus.Errorf("rancher-cni-ipam: failed to parse flat bridge:%s cidr, %v", n.Bridge, err)
-	} else {
-		_, metadataIPNet, err := net.ParseCIDR(metadataCIDR)
+	if n.IPAM.IsFlat == true {
+		// ip addr show mpbr0 | grep "inet\b" | awk '{print $2}'
+		// gw: bridge_ip Dst:169.254.169.250
+		cmd := fmt.Sprintf("ip addr show %s | grep 'inet\\b' | awk '{print $2}'", n.Bridge)
+		logrus.Debugf("rancher-cni-ipam: %s", cmd)
+		bridgeCIDR, err := exec.Command("/bin/sh", "-c", cmd).Output()
+		logrus.Debugf("rancher-cni-ipam: get bridgeCIDR %s", bridgeCIDR)
 		if err != nil {
-			logrus.Errorf("rancher-cni-ipam: failed to parse metadataCIDR, err: %v", err)
+			logrus.Errorf("failed to get flat bridge: %s ip, %v", n.Bridge, err)
+		}
+		bridgeIP, _, err := net.ParseCIDR(strings.Replace(string(bridgeCIDR), "\n", "", -1))
+		logrus.Debugf("rancher-cni-ipam: get bridgeIP %s", bridgeIP)
+		if err != nil {
+			logrus.Errorf("rancher-cni-ipam: failed to parse flat bridge:%s cidr, %v", n.Bridge, err)
 		} else {
-			mdRoute := types.Route{Dst: *metadataIPNet, GW: bridgeIP}
-			logrus.Debugf("rancher-cni-ipam: metadata route, dst: %s, gw: %s", metadataIPNet.String(), bridgeIP)
-			n.IPAM.Routes = append(n.IPAM.Routes, mdRoute)
+			_, metadataIPNet, err := net.ParseCIDR(metadataCIDR)
+			if err != nil {
+				logrus.Errorf("rancher-cni-ipam: failed to parse metadataCIDR, err: %v", err)
+			} else {
+				mdRoute := types.Route{Dst: *metadataIPNet, GW: bridgeIP}
+				logrus.Debugf("rancher-cni-ipam: metadata route, dst: %s, gw: %s", metadataIPNet.String(), bridgeIP)
+				n.IPAM.Routes = append(n.IPAM.Routes, mdRoute)
+			}
 		}
 	}
 
