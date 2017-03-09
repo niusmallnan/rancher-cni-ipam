@@ -27,6 +27,18 @@ type IPAMConfig struct {
 	RancherContainerUUID types.UnmarshallableString
 }
 
+func (ipamConf *IPAMConfig) String() string {
+	routes := make([]string, 3)
+	for _, r := range ipamConf.Routes {
+		b, _ := r.MarshalJSON()
+		routes = append(routes, string(b))
+	}
+	return fmt.Sprintf("&IPAMConfig{CommonArgs:%#v, Type:%s, LogToFile:%s, IsDebugLevel:%s, SubnetPrefixSize:%s, RancherContainerUUID:%s, Routes:%s}",
+		ipamConf.IgnoreUnknown, ipamConf.Type, ipamConf.LogToFile,
+		ipamConf.IsDebugLevel, ipamConf.SubnetPrefixSize,
+		ipamConf.RancherContainerUUID, routes)
+}
+
 // Net loads the options of the CNI network configuration file
 type Net struct {
 	Name   string      `json:"name"`

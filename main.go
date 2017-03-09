@@ -33,7 +33,7 @@ func cmdAdd(args *skel.CmdArgs) error {
 
 	logrus.Debugf("rancher-cni-ipam: cmdAdd: invoked")
 	logrus.Debugf("rancher-cni-ipam: %s", fmt.Sprintf("args: %#v", args))
-	logrus.Debugf("rancher-cni-ipam: %s", fmt.Sprintf("ipamConf: %#v", ipamConf))
+	logrus.Debugf("rancher-cni-ipam: %s", fmt.Sprintf("ipamConf: %s", ipamConf.String()))
 	logrus.Debugf("rancher-cni-ipam: rancher UUID: %s", ipamConf.RancherContainerUUID)
 
 	ipf, err := metadata.NewIPFinderFromMetadata()
